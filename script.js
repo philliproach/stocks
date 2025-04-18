@@ -160,7 +160,7 @@ function createWidget(container, symbol) {
     // Create widget
     new TradingView.widget({
         "width": "100%",
-        "height": 600,
+        "height": "100%",
         "symbol": symbol,
         "interval": document.getElementById('interval').value,
         "timezone": "Etc/UTC",
