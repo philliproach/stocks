@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .search-container {
+            margin: 1rem 0;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        button {
+            padding: 0.5rem 1rem;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .widget-container {
+            margin-top: 1rem;
+            height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .controls-container {
+            display: flex;
+            margin-top: 1rem;
+            gap: 1rem;
+        }
+        
+        .stock-selector {
+            flex: 1;
+            background-color: white;
+            border-radius: 4px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .active-stocks {
+            flex: 1;
+            background-color: white;
+            border-radius: 4px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            font-size: 1.1rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.25rem;
+        }
+        
+        .stock-category {
+            margin-bottom: 1rem;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .checkbox-item input {
+            margin-right: 0.25rem;
+        }
+        
+        .checked-stocks {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .stock-chip {
+            background-color: #3498db;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .remove-stock {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .update-interval {
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .update-interval select {
+            padding: 0.25rem;
+        }
+        
+        footer {
+            margin-top: 2rem;
+            text-align: center;
+            padding: 1rem;
+            background-color: #2c3e50;
+            color: white;
+        }
+        
+        .multi-chart-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .chart-item {
+            height: 300px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        @media (max-width: 768px) {
+            .controls-container {
+                flex-direction: column;
+            }
+            
+            .multi-chart-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Stock Viewer</h1>
+    </header>
+    
+    <div class="container">
+        <div class="search-container">
+            <input type="text" id="symbolInput" placeholder="Enter stock symbol (e.g., AAPL, MSFT, GOOGL)">
+            <button id="searchBtn">Add Symbol</button>
+        </div>
+        
+        <div class="controls-container">
+            <div class="stock-selector">
+                <div class="section-title">Select Stocks to View</div>
+                
+                <div class="stock-category">
+                    <div class="category-title">Cryptocurrencies</div>
+                    <div class="checkbox-container" id="crypto-container">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="BTCUSD" value="BTCUSD">
+                            <label for="BTCUSD">Bitcoin (BTC)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="ETHUSD" value="ETHUSD">
+                            <label for="ETHUSD">Ethereum (ETH)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="XMRUSD" value="XMRUSD">
+                            <label for="XMRUSD">Monero (XMR)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="DOTUSD" value="DOTUSD">
+                            <label for="DOTUSD">Polkadot (DOT)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="ADAUSD" value="ADAUSD">
+                            <label for="ADAUSD">Cardano (ADA)</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stock-category">
+                    <div class="category-title">Technology</div>
+                    <div class="checkbox-container" id="tech-container">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="AAPL" value="AAPL">
+                            <label for="AAPL">Apple (AAPL)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="MSFT" value="MSFT">
+                            <label for="MSFT">Microsoft (MSFT)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="GOOGL" value="GOOGL">
+                            <label for="GOOGL">Alphabet (GOOGL)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="NVDA" value="NVDA">
+                            <label for="NVDA">NVIDIA (NVDA)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="META" value="META">
+                            <label for="META">Meta (META)</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stock-category">
+                    <div class="category-title">Healthcare</div>
+                    <div class="checkbox-container" id="health-container">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="UNH" value="UNH">
+                            <label for="UNH">UnitedHealth (UNH)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="JNJ" value="JNJ">
+                            <label for="JNJ">Johnson & Johnson (JNJ)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="PFE" value="PFE">
+                            <label for="PFE">Pfizer (PFE)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="ABBV" value="ABBV">
+                            <label for="ABBV">AbbVie (ABBV)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="MRK" value="MRK">
+                            <label for="MRK">Merck (MRK)</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stock-category">
+                    <div class="category-title">Finance</div>
+                    <div class="checkbox-container" id="finance-container">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="JPM" value="JPM">
+                            <label for="JPM">JPMorgan Chase (JPM)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="BAC" value="BAC">
+                            <label for="BAC">Bank of America (BAC)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="V" value="V">
+                            <label for="V">Visa (V)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="MA" value="MA">
+                            <label for="MA">Mastercard (MA)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="GS" value="GS">
+                            <label for="GS">Goldman Sachs (GS)</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="active-stocks">
+                <div class="section-title">Active Stocks</div>
+                <div class="checked-stocks" id="checked-stocks-display"></div>
+                
+                <div class="update-interval">
+                    <label for="interval">Update Interval:</label>
+                    <select id="interval">
+                        <option value="1">1 minute</option>
+                        <option value="5" selected>5 minutes</option>
+                        <option value="15">15 minutes</option>
+                        <option value="30">30 minutes</option>
+                        <option value="60">1 hour</option>
+                    </select>
+                </div>
+                
+                <div style="margin-top: 1rem;">
+                    <button id="updateChartsBtn">Update Charts</button>
+                    <button id="clearAllBtn">Clear All</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="multi-chart-container" id="charts-container"></div>
+    </div>
+    
+    <footer>
+        <p>Powered by TradingView | &copy; 2025 Stock Viewer</p>
+    </footer>
+    
+    <script>
+        // Store for active symbols
+        let activeSymbols = [];
+        
+        // Function to load symbols from localStorage
+        function loadSavedSymbols() {
+            const savedSymbols = localStorage.getItem('activeSymbols');
+            if (savedSymbols) {
+                activeSymbols = JSON.parse(savedSymbols);
+                
+                // Check the boxes for saved symbols
+                activeSymbols.forEach(symbol => {
+                    const checkbox = document.getElementById(symbol);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                });
+                
+                // Update UI
+                updateCheckedStocksDisplay();
+                renderCharts();
+            }
+        }
+        
+        // Function to save symbols to localStorage
+        function saveSymbols() {
+            localStorage.setItem('activeSymbols', JSON.stringify(activeSymbols));
+        }
+        
+        // Function to update the checked stocks display
+        function updateCheckedStocksDisplay() {
+            const container = document.getElementById('checked-stocks-display');
+            container.innerHTML = '';
+            
+            if (activeSymbols.length === 0) {
+                container.innerHTML = '<p>No stocks selected. Check boxes from the categories or use the search bar.</p>';
+                return;
+            }
+            
+            activeSymbols.forEach(symbol => {
+                const chip = document.createElement('div');
+                chip.className = 'stock-chip';
+                chip.innerHTML = `
+                    <span>${symbol}</span>
+                    <span class="remove-stock" data-symbol="${symbol}">✕</span>
+                `;
+                container.appendChild(chip);
+            });
+            
+            // Add event listeners to remove buttons
+            document.querySelectorAll('.remove-stock').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const symbolToRemove = this.getAttribute('data-symbol');
+                    removeSymbol(symbolToRemove);
+                });
+            });
+        }
+        
+        // Function to add a symbol
+        function addSymbol(symbol) {
+            // Check if symbol is already in the list
+            if (!activeSymbols.includes(symbol)) {
+                activeSymbols.push(symbol);
+                saveSymbols();
+                updateCheckedStocksDisplay();
+                renderCharts();
+                
+                // Check the box if it exists
+                const checkbox = document.getElementById(symbol);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            }
+        }
+        
+        // Function to remove a symbol
+        function removeSymbol(symbol) {
+            activeSymbols = activeSymbols.filter(s => s !== symbol);
+            saveSymbols();
+            updateCheckedStocksDisplay();
+            renderCharts();
+            
+            // Uncheck the box if it exists
+            const checkbox = document.getElementById(symbol);
+            if (checkbox) {
+                checkbox.checked = false;
+            }
+        }
+        
+        // Function to create a TradingView widget
+        function createWidget(container, symbol) {
+            // Create widget
+            new TradingView.widget({
+                "width": "100%",
+                "height": "100%",
+                "symbol": symbol,
+                "interval": document.getElementById('interval').value,
+                "timezone": "Etc/UTC",
+                "theme": "light",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "hide_top_toolbar": true,
+                "hide_legend": true,
+                "save_image": false,
+                "container_id": container
+            });
+        }
+        
+        // Function to render all charts
+        function renderCharts() {
+            const chartsContainer = document.getElementById('charts-container');
+            chartsContainer.innerHTML = '';
+            
+            if (activeSymbols.length === 0) {
+                chartsContainer.innerHTML = '<p>No stocks selected to display.</p>';
+                return;
+            }
+            
+            activeSymbols.forEach((symbol, index) => {
+                const chartDiv = document.createElement('div');
+                chartDiv.className = 'chart-item';
+                chartDiv.id = `chart-${index}`;
+                chartsContainer.appendChild(chartDiv);
+                
+                createWidget(`chart-${index}`, symbol);
+            });
+        }
+        
+        // Initialize TradingView script
+        function initTradingViewScript() {
+            return new Promise((resolve, reject) => {
+                if (window.TradingView) {
+                    resolve();
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = 'https://s3.tradingview.com/tv.js';
+                script.async = true;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+        
+        // Event listener for the search button
+        document.getElementById('searchBtn').addEventListener('click', function() {
+            const symbol = document.getElementById('symbolInput').value.trim().toUpperCase();
+            if (symbol) {
+                addSymbol(symbol);
+                document.getElementById('symbolInput').value = '';
+            }
+        });
+        
+        // Event listener for the search input (enter key)
+        document.getElementById('symbolInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const symbol = this.value.trim().toUpperCase();
+                if (symbol) {
+                    addSymbol(symbol);
+                    this.value = '';
+                }
+            }
+        });
+        
+        // Event listener for checkboxes
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const symbol = this.value;
+                if (this.checked) {
+                    addSymbol(symbol);
+                } else {
+                    removeSymbol(symbol);
+                }
+            });
+        });
+        
+        // Event listener for update charts button
+        document.getElementById('updateChartsBtn').addEventListener('click', function() {
+            renderCharts();
+        });
+        
+        // Event listener for clear all button
+        document.getElementById('clearAllBtn').addEventListener('click', function() {
+            activeSymbols = [];
+            saveSymbols();
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateCheckedStocksDisplay();
+            renderCharts();
+        });
+        
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', async function() {
+            try {
+                await initTradingViewScript();
+                loadSavedSymbols();
+            } catch (error) {
+                console.error('Failed to load TradingView script:', error);
+                alert('Failed to load TradingView charts. Please refresh the page.');
+            }
+        });
+    </script>
+</body>
+</html>
